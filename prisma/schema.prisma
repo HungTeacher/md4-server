@@ -1,0 +1,37 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("PRM_DB_URL")
+}
+
+model users {
+  id           Int      @id @unique @default(autoincrement())
+  email        String   @unique
+  emailConfirm Boolean  @default(false)
+  userName     String   @unique
+  firstName    String
+  lastName     String
+  password     String
+  avatar       String   @default("no_avatar.jpg")
+  // address      Address[]
+  isAdmin      Boolean  @default(false)
+  createAt     DateTime @default(now())
+  updateAt     DateTime @default(now())
+}
+
+// type Address {
+//   id           String
+//   title        String
+//   provinceId   Int
+//   provinceName String
+//   districtId   Int
+//   districtName String
+//   wardCode     String
+//   wardName     String
+// }
