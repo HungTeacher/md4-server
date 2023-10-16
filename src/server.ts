@@ -15,7 +15,8 @@ import cors from 'cors'
 server.use(cors())
 
 /*Setup api config*/
-
+import apiConfig from './route';
+server.use('/apis', apiConfig)
 
 server.listen(process.env.SERVER_PORT, () => {
     console.log(`Server listening on link: http://${process.env.SERVER_HOST}: ${process.env.SERVER_PORT}`)

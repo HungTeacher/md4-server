@@ -19,19 +19,8 @@ model users {
   lastName     String
   password     String
   avatar       String   @default("no_avatar.jpg")
-  // address      Address[]
   isAdmin      Boolean  @default(false)
+  role         String   @default("USER")
   createAt     DateTime @default(now())
   updateAt     DateTime @default(now())
 }
-
-// type Address {
-//   id           String
-//   title        String
-//   provinceId   Int
-//   provinceName String
-//   districtId   Int
-//   districtName String
-//   wardCode     String
-//   wardName     String
-// }

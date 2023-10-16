@@ -2,17 +2,6 @@
 import {PrismaClient} from "@prisma/client";
 const prisma = new PrismaClient()
 
-// export type Address = {
-//     id: string
-//     title: string
-//     provinceId: number
-//     provinceName: string
-//     districtId: number
-//     districtName: string
-//     wardCode: string
-//     wardName: string
-// }
-
 
 export interface NewUser {
     email: string;
@@ -21,9 +10,9 @@ export interface NewUser {
     firstName: string;
     lastName: string;
     avatar?: string;
+    role: string;
     createAt: Date,
     updateAt?: Date,
-    // address?: Address[]
 }
 
 export default {
@@ -37,6 +26,7 @@ export default {
                 data: user,
                 message: "register successfully"
             }
+
         } catch (err) {
             console.log("error", err)
         }
@@ -65,6 +55,43 @@ export default {
                 status: false,
                 data: null,
                 message
+            }
+        }
+    },
+    findAllUsers: async function () {
+        try {
+            let users = await prisma.users.findMany({
+                where: {
+                    role: "USER"
+                }
+            })
+            return {
+                message: "get all user thanh cong",
+                data: users
+            }
+        } catch(err) {
+            return {
+                status: false,
+                message: "get all user that bai"
+            }
+        }
+    },
+    findById: async function(idUser: number) {
+        try {
+            let userById = await prisma.users.findUnique({
+                where: {
+                    id: idUser
+                }
+            })
+            console.log("userById: ", userById)
+            return {
+                message: "get user thanh cong",
+                data: userById,
+            }
+        } catch(err) {
+            return {
+                status: false,
+                message: "get user that bai"
             }
         }
     }
