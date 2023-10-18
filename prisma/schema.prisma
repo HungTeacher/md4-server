@@ -24,3 +24,25 @@ model users {
   createAt     DateTime @default(now())
   updateAt     DateTime @default(now())
 }
+
+model categories {
+  id       Int        @id @default(autoincrement())
+  title    String     @unique
+  active   Boolean    @default(true)
+  avatar   String     @default("no_avatar.jpg")
+  createAt DateTime   @default(now())
+  updateAt DateTime   @default(now())
+  products products[]
+}
+
+model products {
+  id         Int        @id @default(autoincrement())
+  name       String
+  avatar     String     @default("no_avatar.jpg")
+  price      Float
+  des        String
+  categoryId Int
+  createAt   DateTime   @default(now())
+  updateAt   DateTime   @default(now())
+  category   categories @relation(fields: [categoryId], references: [id])
+}
