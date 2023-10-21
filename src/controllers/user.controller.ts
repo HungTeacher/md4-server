@@ -24,13 +24,19 @@ export default {
     login: async function (req: Request, res: Response) {
         try {
             let modelRes = await userModel.inforByUserName(req.body.userName)
-            return res.status(200).json({
-                message: "login successfully",
-                token: jwt.createToken(modelRes.data, "1d")
+            if(modelRes.status) {
+                return res.status(200).json({
+                    message: "login successfully",
+                    token: jwt.createToken(modelRes.data, "1d")
+                })
+            }
+            return res.status(213).json({
+                message: "User does not exist"
             })
+
         } catch {
             return res.status(500).json({
-                message: "Cannot register from server"
+                message: "Controller error"
             })
         }
     },
