@@ -40,7 +40,10 @@ export async function uploadFileToStorage(file: any, folderName: any, bufferData
         url = await uploadBytes(fileRef, bufferData, metadata).then(async res => {
             //khi up thành công thì tìm url
             return await getDownloadURL(res.ref)
-                .then(url => url)
+                .then(url => {
+                    console.log("url", url)
+                    return url
+                })
                 .catch(er => false)
         })
     } else {

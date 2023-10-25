@@ -51,7 +51,7 @@ export default {
             }
         }
     },
-    findByCategory: async function (categoryId: any) {
+    findByCategory: async function (categoryId: number) {
         try {
             let products = await prisma.products.findMany({
                 where: {
@@ -71,7 +71,7 @@ export default {
             }
         }
     },
-    findById: async function (productId: any) {
+    findById: async function (productId: number) {
         try {
             let product = await prisma.products.findUnique({
                 where: {
@@ -91,7 +91,7 @@ export default {
             }
         }
     },
-    update: async (productId: any, data: any) => {
+    update: async (productId: number, data: any) => {
         try {
             let product = await prisma.products.update({
                 where: {

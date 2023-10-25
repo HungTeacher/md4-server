@@ -12,7 +12,7 @@ export default {
         }
 
         if (req.files) {
-            let avatarUrl = await uploadFileToStorage((req.files as any)[0], "md4", fs.readFileSync((req.files as any)[0].path))
+            let avatarUrl = await uploadFileToStorage((req.files as any)[0], "images", fs.readFileSync((req.files as any)[0].path))
             fs.unlink((req.files as any)[0].path, (err) => {
 
             })
@@ -43,7 +43,7 @@ export default {
     },
     findByCategory: async function (req: Request, res: Response) {
         try {
-            let modelRes = await productModel.findByCategory(req.params.categoryId);
+            let modelRes = await productModel.findByCategory(+req.params.categoryId);
             return res.status(modelRes.status ? 200 : 213).json(modelRes);
         } catch (err) {
             return res.status(500).json({
@@ -53,7 +53,7 @@ export default {
     },
     findById: async function (req: Request, res: Response) {
         try {
-            let modelRes = await productModel.findById(req.params.id);
+            let modelRes = await productModel.findById(+req.params.id);
             return res.status(modelRes.status ? 200 : 213).json(modelRes);
         } catch (err) {
             return res.status(500).json({
@@ -74,7 +74,7 @@ export default {
 
         try {
             /* Gọi model xử lý database */
-            let result = await productModel.update(req.params.productId, req.body);
+            let result = await productModel.update(+req.params.productId, req.body);
             return res.status(result.status ? 200 : 214).json(result)
             // console.log("result", result)
         } catch (err) {
