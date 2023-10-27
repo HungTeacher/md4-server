@@ -68,9 +68,9 @@ model userReceipts {
   user              users               @relation(fields: [userId], references: [id])
   state             ReceiptState        @default(PENDING)
   createAt          DateTime            @default(now())
-  acceptTime        DateTime
-  shippingTime      DateTime
-  doneTime          DateTime
+  acceptTime        DateTime?
+  shippingTime      DateTime?
+  doneTime          DateTime?
   total             Float
   payMode           ReceiptPayMode
   paid              Boolean             @default(false)
@@ -83,9 +83,9 @@ model guestReceipts {
   phoneNumber        String
   state              ReceiptState         @default(PENDING)
   createAt           DateTime             @default(now())
-  acceptTime         DateTime
-  shippingTime       DateTime
-  doneTime           DateTime
+  acceptTime         DateTime?
+  shippingTime       DateTime?
+  doneTime           DateTime?
   total              Float
   payMode            ReceiptPayMode
   paid               Boolean              @default(false)
