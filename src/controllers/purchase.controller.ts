@@ -1,4 +1,4 @@
-import purchaseModel from "../models/product.model";
+import purchaseModel from "../models/purchase.model";
 import {Request, Response} from "express";
 
 
@@ -47,7 +47,7 @@ export default {
     },
     findById: async function (req: Request, res: Response) {
         try {
-            let modelRes = await purchaseModel.findById(req.params.orderId);
+            let modelRes = await purchaseModel.findById(Number(req.params.orderId));
             return res.status(modelRes.status ? 200 : 213).json(modelRes);
         } catch (err) {
             return res.status(500).json({
@@ -83,9 +83,10 @@ export default {
     ,
     update: async function (req: Request, res: Response) {
         try {
-            let modelRes = await purchaseModel.update(String(req.params.orderId), {
-                state: req.body.state
-            }, req.body.type);
+            let modelRes = await purchaseModel.update(Number(req.params.orderId), {
+                state: req.body.state,
+
+            }, true);
             return res.status(modelRes.status ? 200 : 213).json(modelRes);
         } catch (err) {
             return res.status(500).json({

@@ -1,120 +1,21 @@
-import { PrismaClient, ReceiptPayMode, ReceiptState } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
-/* Guest */
-
-interface NewGuestReceiptDetail {
-    productId: number;
-    quantity: number;
-}
-
-interface GuestReceiptDetail extends NewGuestReceiptDetail {
-    id: string;
-    guestReceiptId: string;
-}
-
-interface NewGuestReceipt {
-    email: string;
-    phoneNumber: string;
-    total: number;
-    payMode: ReceiptPayMode;
-    paid?: boolean;
-}
-
-interface GuestReceipt extends NewGuestReceipt {
-    id: string;
-    state?: ReceiptState;
-    createAt: Date;
-    acceptTime?: Date;
-    shippingTime?: Date;
-    doneTime?: Date;
-    guestReceiptDetail: GuestReceiptDetail[];
-}
-
-/* User */
-interface NewUserReceiptDetail {
-    productId: number;
-    quantity: number;
-}
-
-interface UserReceiptDetail extends NewUserReceiptDetail {
-    id: string;
-    userReceiptId: string;
-}
-
-interface NewUserReceipt {
-    total: number;
-    payMode: ReceiptPayMode;
-    paid?: boolean;
-}
-
-interface UserReceipt extends NewUserReceipt {
-    id: string;
-    state?: ReceiptState;
-    createAt: Date;
-    acceptTime?: Date;
-    shippingTime?: Date;
-    doneTime?: Date;
-    userReceiptDetail: UserReceiptDetail[];
-}
-
 export default {
-    createGuestReceipt: async function (newGuestReceipt: NewGuestReceipt, guestReceiptDetailList: NewGuestReceiptDetail[]) {
+    create: async function (newProduct: any) {
         try {
-            let receipt = await prisma.guestReceipts.create({
+            let product = await prisma.products.create({
                 data: {
-                    ...newGuestReceipt,
-                    guestReceiptDetail: {
-                        createMany: {
-                            data: guestReceiptDetailList
-                        }
-                    }
+                    ...newProduct,
                 },
-                include: {
-                    guestReceiptDetail: {
-                        include: {
-                            product: true
-                        }
-                    }
-                }
-            })
-            return {
-                status: true,
-                message: "orderSuccess",
-                data: receipt
-            }
-        } catch (err) {
-            console.log("err", err)
-            return {
-                status: false,
-                message: "modelErr",
-                data: null
-            }
-        }
-    },
-    createUserReceipt: async function (newUserReceipt: NewUserReceipt, userReceiptDetailList: NewUserReceiptDetail[], userId: number) {
-        try {
-            let receipt = await prisma.userReceipts.create({
-                data: {
-                    ...newUserReceipt,
-                    user: { connect: { id: userId } },
-                    userReceiptDetail: {
-                        createMany: {
-                            data: userReceiptDetailList
-                        }
-                    }
-                },
-                include: {
-                    userReceiptDetail: true
-                }
             });
+
             return {
                 status: true,
-                message: "orderSuccess",
-                data: receipt
+                message: "addProductSuccess",
+                data: product
             }
         } catch (err) {
-            console.log("err", err);
             return {
                 status: false,
                 message: "modelErr",
@@ -122,26 +23,26 @@ export default {
             }
         }
     },
-    findManyGuestReceipts: async function (maxItemPage: number, skipItem: number) {
+    findAll: async function (maxItemPage: number, skipItem: number) {
         try {
-            let orders = await prisma.guestReceipts.findMany({
+            let products = await prisma.products.findMany({
                 skip: skipItem,
                 take: maxItemPage,
                 include: {
-                    guestReceiptDetail: {
-                        include: {
-                            product: true
-                        }
-                    }
+                    category: true
                 }
             });
-            let countItem = (await prisma.guestReceipts.findMany()).length;
+            products = products.map(product => ({
+                ...product,
+                categoryName: product.category.title
+            }));
+            let countItem = (await prisma.products.findMany()).length;
             let maxPage = Math.ceil(countItem / maxItemPage);
             return {
                 status: true,
-                message: "Lấy danh sách hoá đơn thành công",
+                message: "san pham duoc tim thay!",
                 maxPage,
-                data: orders,
+                data: products,
             }
         } catch (err) {
             return {
@@ -150,24 +51,17 @@ export default {
             }
         }
     },
-    findById: async function (orderId: number) {
+    findByCategory: async function (categoryId: number) {
         try {
-            let order = await prisma.guestReceipts.findUnique({
+            let products = await prisma.products.findMany({
                 where: {
-                    id: orderId
-                },
-                include: {
-                    guestReceiptDetail: {
-                        include: {
-                            product: true
-                        }
-                    }
+                    categoryId: categoryId
                 }
-            })
+            });
             return {
                 status: true,
-                message: "get Guest Receipt by Id successfully",
-                data: order
+                message: "get products successfully",
+                data: products
             }
         } catch (err) {
             return {
@@ -177,111 +71,80 @@ export default {
             }
         }
     },
-    findGuestReceipt: async function (guestEmail: string) {
+    findById: async function (productId: number) {
         try {
-            let receipts = await prisma.guestReceipts.findMany({
+            let product = await prisma.products.findUnique({
                 where: {
-                    email: guestEmail
-                },
-                include: {
-                    guestReceiptDetail: {
-                        include: {
-                            product: true
-                        }
-                    }
+                    id: productId
                 }
             })
             return {
                 status: true,
-                message: "Lấy danh sách order thành công! ",
-                data: receipts
+                message: "get product successfully",
+                data: product
             }
         } catch (err) {
             return {
                 status: false,
-                message: "Lỗi model!",
+                message: "modelErr",
                 data: null
             }
         }
     },
-    findUserReceipt: async function (userId: number) {
-        console.log("da vao findUserReceipt")
+    update: async (productId: number, data: any) => {
         try {
-            let receipts = await prisma.userReceipts.findMany({
+            let product = await prisma.products.update({
                 where: {
-                    userId: userId
+                    id: productId
                 },
-                include: {
-                    userReceiptDetail: {
-                        include: {
-                            product: true
-                        }
-                    },
-                    user: true
-                },
+                data: {
+                    ...data
+                }
+            })
 
-            })
             return {
                 status: true,
-                message: "Lấy danh sách order của người dùng thành công! ",
-                data: receipts
+                message: "Update thành công!",
+                data: product
             }
         } catch (err) {
             console.log("err", err)
             return {
                 status: false,
-                message: "Lỗi model!",
+                message: "modelErr",
+            }
+        }
+    },
+    searchByName: async function (searchString: string) {
+        try {
+            let products = await prisma.products.findMany({
+                where: {
+                    OR: [
+                        {
+                            name: {
+                                contains: searchString,
+                            }
+                        },
+                        {
+                            des: {
+                                contains: searchString,
+                            },
+                        }
+                    ]
+                }
+            });
+            return {
+                status: true,
+                message: "Ket qua search",
+                data: products
+            }
+        } catch (err) {
+            console.log("err", err)
+            return {
+                status: false,
+                message: "lỗi!",
                 data: null
             }
         }
     },
-    update: async function (receiptId: string, updateData: {
-        acceptTime?: Date,
-        shippingTime?: Date,
-        doneTime?: Date,
-        state: ReceiptState
-    }, type: boolean) { // type false: guest, true: user
-        try {
-            if (type) {
-                return {
-                    status: true,
-                    message: "Update ok!",
-                    data: null
-                }
-            } else {
-                let updateDataTemp = {
-                    state: updateData.state,
-                    ...(
-                        updateData.state == "ACCEPTED" ? {
-                            acceptTime: new Date(Date.now())
-                        } : updateData.state == "SHIPPING" ? {
-                            shippingTime: new Date(Date.now()),
-                        } : updateData.state == "DONE" ? {
-                            doneTime: new Date(Date.now())
-                        } : {}
-                    )
-                }
-                let receipt = await prisma.guestReceipts.update({
-                    where: {
-                        id: receiptId
-                    },
-                    data: {
-                        ...updateDataTemp
-                    }
-                })
-
-                return {
-                    status: true,
-                    message: "Update ok!",
-                    data: receipt
-                }
-            }
-        } catch (err) {
-            return {
-                status: false,
-                message: "Model lỗi!",
-                data: null
-            }
-        }
-    }
 }

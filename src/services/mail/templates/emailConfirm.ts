@@ -1,5 +1,4 @@
 import Mailgen from 'mailgen';
-import Text from '../../../text'
 
 interface MailBody {
     productName: string;
@@ -20,19 +19,19 @@ function genEmailString(mailBody: MailBody) {
 
     let email = {
         body: {
-            greeting: Text(mailBody.language).hello,
-            signature: Text(mailBody.language).signature,
+            greeting: "Hi",
+            signature: "Have a good day",
             name: mailBody.receiverName,
-            intro: Text(mailBody.language).intro,
+            intro: `Thank you for joining the community ${process.env.APP_NAME}! We are very happy about that!`,
             action: {
-                instructions: `${Text(mailBody.language).instructionOne} ${mailBody.productName}, ${Text(mailBody.language).instructionTwo}`,
+                instructions: `To get started with ${mailBody.productName}, please click here:}`,
                 button: {
                     color: '#22BC66', // Optional action button color
-                    text: Text(mailBody.language).mailBtnText,
+                    text: "Confirm your account!",
                     link: mailBody.confirmLink
                 }
             },
-            outro: Text(mailBody.language).outro
+            outro: "Need help, or have questions? Just reply to this email, we\'d love to help."
         }
     };
 

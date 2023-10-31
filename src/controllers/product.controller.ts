@@ -74,7 +74,7 @@ export default {
 
         try {
             /* Gọi model xử lý database */
-            let result = await productModel.update(+req.params.productId, req.body);
+            let result = await productModel.update(Number(req.params.productId), req.body);
             return res.status(result.status ? 200 : 214).json(result)
             // console.log("result", result)
         } catch (err) {

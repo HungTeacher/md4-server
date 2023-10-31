@@ -1,10 +1,11 @@
-import {PrismaClient, ReceiptPayMode, ReceiptState } from "@prisma/client";
+import {PrismaClient, ReceiptPayMode, ReceiptState} from '@prisma/client';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
-//Guest
+/* Guest */
+
 interface NewGuestReceiptDetail {
-    productId: number;
+    productId: string;
     quantity: number;
 }
 
@@ -28,18 +29,18 @@ interface GuestReceipt extends NewGuestReceipt {
     acceptTime?: Date;
     shippingTime?: Date;
     doneTime?: Date;
-    guestReceiptDetail: GuestReceiptDetail
+    guestReceiptDetail: GuestReceiptDetail[];
 }
 
-//User
+/* User */
 interface NewUserReceiptDetail {
-    productId: number;
+    productId: string;
     quantity: number;
 }
 
 interface UserReceiptDetail extends NewUserReceiptDetail {
     id: string;
-    userReceiptId: string
+    userReceiptId: string;
 }
 
 interface NewUserReceipt {
@@ -55,7 +56,7 @@ interface UserReceipt extends NewUserReceipt {
     acceptTime?: Date;
     shippingTime?: Date;
     doneTime?: Date;
-    userReceiptDetail: UserReceiptDetail[]
+    userReceiptDetail: UserReceiptDetail[];
 }
 
 export default {
@@ -65,9 +66,9 @@ export default {
                 data: {
                     ...newGuestReceipt,
                     guestReceiptDetail: {
-                        createMany: {
+                        /*createMany: {
                             data: guestReceiptDetailList
-                        }
+                        }*/
                     }
                 },
                 include: {
@@ -75,7 +76,6 @@ export default {
                         include: {
                             product: true
                         }
-
                     }
                 }
             })
@@ -84,40 +84,195 @@ export default {
                 message: "orderSuccess",
                 data: receipt
             }
-        } catch(err) {
+        } catch (err) {
+            console.log("err", err)
             return {
                 status: false,
-                message: "Model Error",
+                message: "modelErr",
                 data: null
             }
         }
     },
-    createUserReceipt: async function (newUserReceipt: NewUserReceipt, userReceiptDetailList: NewUserReceiptDetail[],  userId: number) {
+    createUserReceipt: async function (newUserReceipt: NewUserReceipt, userReceiptDetailList: NewUserReceiptDetail[], userId: number) {
         try {
             let receipt = await prisma.userReceipts.create({
                 data: {
                     ...newUserReceipt,
-                    user: { connect: { id: userId}},
+                    user: {connect: {id: userId}},
                     userReceiptDetail: {
-                        createMany: {
+                        /*createMany: {
                             data: userReceiptDetailList
-                        }
+                        }*/
                     }
                 },
                 include: {
                     userReceiptDetail: true
                 }
-            })
+            });
             return {
                 status: true,
                 message: "orderSuccess",
                 data: receipt
             }
-        } catch(err) {
+        } catch (err) {
+            console.log("err", err);
             return {
                 status: false,
-                message: "model error",
+                message: "modelErr",
                 data: null
+            }
+        }
+    },
+    findManyGuestReceipts: async function (maxItemPage: number, skipItem: number) {
+        try {
+            let orders = await prisma.guestReceipts.findMany({
+                skip: skipItem,
+                take: maxItemPage,
+                include: {
+                    guestReceiptDetail: {
+                        include: {
+                            product: true
+                        }
+                    }
+                }
+            });
+            let countItem = (await prisma.guestReceipts.findMany()).length;
+            let maxPage = Math.ceil(countItem / maxItemPage);
+            return {
+                status: true,
+                message: "Lấy danh sách hoá đơn thành công",
+                maxPage,
+                data: orders,
+            }
+        } catch (err) {
+            return {
+                status: false,
+                message: "modelErr",
+            }
+        }
+    },
+    findById: async function (orderId: number) {
+        try {
+            let order = await prisma.guestReceipts.findUnique({
+                where: {
+                    id: orderId
+                },
+                include: {
+                    guestReceiptDetail: {
+                        include: {
+                            product: true
+                        }
+                    }
+                }
+            })
+            return {
+                status: true,
+                message: "get Guest Receipt by Id successfully",
+                data: order
+            }
+        } catch (err) {
+            return {
+                status: false,
+                message: "modelErr",
+                data: null
+            }
+        }
+    },
+    findGuestReceipt: async function (guestEmail: string) {
+        try {
+            let receipts = await prisma.guestReceipts.findMany({
+                where: {
+                    email: guestEmail
+                },
+                include: {
+                    guestReceiptDetail: {
+                        include: {
+                            product: true
+                        }
+                    }
+                }
+            })
+            return {
+                status: true,
+                message: "Lấy danh sách order thành công! ",
+                data: receipts
+            }
+        } catch (err) {
+            return {
+                status: false,
+                message: "Lỗi model!",
+                data: null
+            }
+        }
+    },
+    findUserReceipt: async function (userId: number) {
+        try {
+            let receipts = await prisma.userReceipts.findMany({
+                where: {
+                    userId: userId
+                },
+                include: {
+                    userReceiptDetail: {
+                        include: {
+                            product: true
+                        }
+                    },
+                    user: true
+                },
+
+            })
+            return {
+                status: true,
+                message: "Lấy danh sách order của người dùng thành công! ",
+                data: receipts
+            }
+        } catch (err) {
+            console.log("err", err)
+            return {
+                status: false,
+                message: "Lỗi model!",
+                data: null
+            }
+        }
+    },
+    update: async function (receiptId: number, updateData: {
+        acceptTime?: Date,
+        shippingTime?: Date,
+        doneTime?: Date,
+        state: ReceiptState
+    }, type: boolean) {
+        if (type) {
+            return {
+                status: true,
+                message: "Update ok!",
+                data: null
+            }
+        } else {
+            let updateDataTemp = {
+                state: updateData.state,
+                ...(
+                    updateData.state == "ACCEPTED" ? {
+                        acceptTime: new Date(Date.now())
+                    } : updateData.state == "SHIPPING" ? {
+                        shippingTime: new Date(Date.now()),
+                    } : updateData.state == "DONE" ? {
+                        doneTime: new Date(Date.now())
+                    } : {}
+                )
+            }
+            let receipt = await prisma.guestReceipts.update({
+                where: {
+                    id: receiptId
+                },
+                data: {
+                    ...updateDataTemp
+                }
+            })
+
+            return {
+                status: true,
+                message: "Update ok!",
+                data: receipt
             }
         }
     }
